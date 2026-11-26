@@ -1,6 +1,6 @@
 // ==========================================================
-// Practica 5. Aplicaciones del lado del cliente
-// Bloc de notas con Vue.js 3 - Equipo TacoCoders
+// Practica 5 y 6. Bloc de notas con Vue.js 3 - Equipo TacoCoders
+// Practica 6: los datos se piden a la API con fetch (api.js)
 // ==========================================================
 
 const { createApp } = Vue;
@@ -13,8 +13,8 @@ createApp({
   // ---------- Datos de la app ----------
   data() {
     return {
-      usuarios: [],      // se llenan con data/usuarios.json
-      notas: [],         // se llenan con data/notas.json
+      usuarios: [],      // se llenan con GET api/usuarios.php
+      notas: [],         // se llenan con GET api/notas.php
       usuarioId: null,   // usuario elegido en el selector
       cargando: true,
       error: '',
@@ -91,17 +91,17 @@ createApp({
       this.idioma = this.idioma === 'es' ? 'en' : 'es';
     },
 
+        // GET: pide los usuarios y las notas a la API
     async cargarDatos() {
+      this.cargando = true;
+      this.error = '';
       try {
-        const [resUsuarios, resNotas] = await Promise.all([
-          fetch('data/usuarios.json'),
-          fetch('data/notas.json')
+        const [usuarios, notas] = await Promise.all([
+          Api.obtenerUsuarios(),
+          Api.obtenerNotas()
         ]);
-        if (!resUsuarios.ok || !resNotas.ok) {
-          throw new Error('No se pudieron leer los archivos JSON');
-        }
-        this.usuarios = await resUsuarios.json();
-        this.notas = await resNotas.json();
+        this.usuarios = usuarios;
+        this.notas = notas;
         this.usuarioId = this.usuarios.length ? this.usuarios[0].id : null;
       } catch (e) {
         this.error = this.t('errorCarga') + e.message;
