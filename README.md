@@ -144,3 +144,94 @@ cambios solo viven en memoria, porque los JSON son fijos; eso se trabaja en la P
 El registro de la tarea 12 se detuvo antes de pasar la tabla final, para que el total del reporte no
 cambiara. Para la siguiente práctica la estimación debe ser más corta, porque ya está armada la
 estructura del proyecto y el entorno de pruebas.
+
+
+---
+
+# Práctica 6. Solicitud a datos
+
+Continuación de la Práctica 5. Ahora la aplicación ya no lee los JSON directamente: **consume los datos con peticiones `fetch` usando los métodos GET, POST, PUT y DELETE** contra una pequeña API en PHP que corre en el servidor Laravel del entorno Docker. Las notas se muestran en una lista debajo del formulario y se agregan, editan y borran **sin recargar la página**.
+
+Como pide el manual, los cambios **no se guardan en los archivos JSON**: la API valida los datos y responde como si los hubiera guardado, simulando el almacenamiento en una base de datos.
+
+## API (`api/`)
+
+| Método | URL | Acción | Respuesta |
+|--------|-----|--------|-----------|
+| GET | `api/usuarios.php` | Lista de usuarios | 200 |
+| GET | `api/notas.php` | Lista de notas | 200 |
+| POST | `api/notas.php` | Crear nota (valida texto, usuario y color) | 201 con la nota, su `id` y su `fecha` |
+| PUT | `api/notas.php?id=N` | Actualizar nota | 200 con la nota actualizada |
+| DELETE | `api/notas.php?id=N` | Borrar nota | 200 con mensaje |
+
+Si los datos no son válidos la API responde **422** con la lista de errores; si falta el `id`, **400**; con otro método, **405**.
+
+## Cambios en la aplicación
+
+- `js/api.js`: funciones `fetch` para cada método (`obtenerUsuarios`, `obtenerNotas`, `crearNota`, `actualizarNota`, `borrarNota`).
+- `js/app.js`: la carga inicial usa GET; agregar usa POST; editar usa PUT; borrar usa DELETE. Vue actualiza la lista con la respuesta del servidor.
+- Avisos: indicador de carga, aviso rojo si falla una petición (por ejemplo sin conexión), botón *Reintentar* si falla la carga y botón *Enviando...* mientras se espera la respuesta.
+- Textos nuevos en español e inglés en `js/idiomas.js`.
+
+## Cómo probar
+
+La API necesita PHP, por eso se prueba en el servidor del entorno Docker (Live Server no ejecuta PHP):
+
+```
+Copy-Item index.html, css, js, data, lib, api -Destination "C:\Practicas yaqui\practica-1-docker\practica-1-docker\app-laravel\public\notas" -Recurse -Force
+```
+
+Abrir `http://localhost:8000/notas/index.html` y revisar las peticiones en DevTools → Network.
+
+## Ramas
+
+- `main`: versión final.
+- `solicitud-a-datos`: rama de trabajo de la Práctica 6 (no se borra, es evidencia).
+- `desarrollo`: rama de trabajo de la Práctica 5.
+- Etiquetas: `practica-5` y `practica-6`.
+
+## Plan de trabajo
+
+| #  | Tarea                                     | Estimado       |
+|----|-------------------------------------------|----------------|
+| 1  | Crear la rama `solicitud-a-datos`         | 5 min          |
+| 2  | Mini API en PHP (GET, POST, PUT, DELETE)  | 25 min         |
+| 3  | `api.js` con las funciones fetch          | 20 min         |
+| 4  | GET: cargar usuarios y notas desde la API | 15 min         |
+| 5  | POST: agregar nota                        | 15 min         |
+| 6  | PUT: editar nota                          | 15 min         |
+| 7  | DELETE: borrar nota                       | 10 min         |
+| 8  | Lista con avisos de carga y error         | 15 min         |
+| 9  | Probar en Docker y revisar Network        | 15 min         |
+| 10 | Commit, push, merge a `main` y tag        | 10 min         |
+| 11 | README, tabla y conclusiones              | 15 min         |
+|    | **Total**                                 | **2 h 40 min** |
+
+## Comparativa de tiempos
+
+Tiempos tomados del reporte *My activities* de TopTracker (una actividad por tarea). TopTracker muestra cada actividad en minutos completos y redondea hacia abajo, por eso la suma de las tareas (53 min) es menor que el total que reporta para el proyecto (57 min); en la tabla se usa el total reportado.
+
+| #  | Tarea                                     | Estimado       | Real       | Diferencia      |
+|----|-------------------------------------------|----------------|------------|-----------------|
+| 1  | Crear la rama `solicitud-a-datos`         | 5 min          | 2 min      | -3 min          |
+| 2  | Mini API en PHP (GET, POST, PUT, DELETE)  | 25 min         | 5 min      | -20 min         |
+| 3  | `api.js` con las funciones fetch          | 20 min         | 8 min      | -12 min         |
+| 4  | GET: cargar usuarios y notas desde la API | 15 min         | 4 min      | -11 min         |
+| 5  | POST: agregar nota                        | 15 min         | 6 min      | -9 min          |
+| 6  | PUT: editar nota                          | 15 min         | 4 min      | -11 min         |
+| 7  | DELETE: borrar nota                       | 10 min         | 4 min      | -6 min          |
+| 8  | Lista con avisos de carga y error         | 15 min         | 13 min     | -2 min          |
+| 9  | Probar en Docker y revisar Network        | 15 min         | 3 min      | -12 min         |
+| 10 | Commit, push, merge a `main` y tag        | 10 min         | 2 min      | -8 min          |
+| 11 | README, tabla y conclusiones              | 15 min         | 2 min      | -13 min         |
+|    | **Total (reporte de TopTracker)**         | **2 h 40 min** | **57 min** | **-1 h 43 min** |
+
+## Conclusiones
+
+El tiempo estimado fue de 2 horas con 40 minutos y el tiempo real registrado en TopTracker fue de 57 minutos, 1 hora con 43 minutos menos. Como se planteó al terminar la Práctica 5, esta vez la estimación fue más corta (2 h 40 min contra 4 h 30 min), porque el proyecto, el entorno Docker y la interfaz ya estaban hechos; aun así el tiempo real fue cerca de un tercio del estimado, porque se siguió una guía paso a paso con el código ya planeado.
+
+La tarea que más tiempo llevó fue la 8 (13 minutos), casi igual a lo estimado, porque tocaba tres archivos a la vez (`idiomas.js`, `app.js` e `index.html`). Al editarlos se borró por accidente la clave `formatoFecha` y quedó una comilla de más en `idiomas.js`, y en `index.html` faltaron dos cambios, así que se reemplazaron los archivos completos. Otro problema que se repitió fue probar sin haber guardado: la pestaña de VS Code tenía el punto blanco de "sin guardar" y el navegador ejecutaba el código anterior. Se detectó porque en la pestaña Network de DevTools no aparecían las peticiones POST, PUT o DELETE; se resolvió guardando, activando *Disable cache* y volviendo a copiar los archivos al servidor.
+
+Lo más útil de la práctica fue ver cómo funcionan las peticiones `fetch` con los distintos métodos HTTP y comprobar cada una en Network: GET con 200 para leer, POST con 201 para crear, PUT y DELETE con 200 para actualizar y borrar, y el aviso de error cuando se simula estar sin conexión. Un archivo JSON estático no puede recibir POST, PUT ni DELETE, por eso se hizo una pequeña API en PHP que valida y responde como si guardara; por la misma razón la aplicación ya no se puede probar con Live Server, que no ejecuta PHP. La lista de notas se actualiza con la respuesta del servidor sin recargar la página, como pide el manual.
+
+La limitación es que los cambios no se guardan: al recargar se vuelven a leer los JSON originales. El siguiente paso sería guardar las notas en una base de datos (por ejemplo MySQL con Laravel, que ya está en el entorno Docker), sin tener que cambiar la parte de Vue, porque toda la comunicación ya pasa por `api.js`.
