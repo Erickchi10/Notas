@@ -17,13 +17,17 @@
     <!-- Barra superior: usuario e idioma -->
     <nav class="navbar navbar-dark bg-dark">
       <div class="container">
-        <span class="navbar-brand fw-bold">📝 Notas</span>
+        <span class="navbar-brand fw-bold">📝 {{ t('marca') }}</span>
         <div class="d-flex align-items-center gap-2">
-          <label for="usuario" class="text-white-50 small mb-0">Usuario:</label>
+          <label for="usuario" class="text-white-50 small mb-0">{{ t('usuario') }}</label>
           <select id="usuario" class="form-select form-select-sm w-auto" v-model.number="usuarioId">
             <option v-for="u in usuarios" :key="u.id" :value="u.id">{{ u.nombre }}</option>
           </select>
-          <button type="button" class="btn btn-outline-light btn-sm">EN</button>
+          <!-- Boton de idioma: muestra el idioma al que se va a cambiar -->
+          <button type="button" class="btn btn-outline-light btn-sm" @click="cambiarIdioma"
+                  :title="idioma === 'es' ? 'Switch to English' : 'Cambiar a español'">
+            {{ idioma === 'es' ? 'EN' : 'ES' }}
+          </button>
         </div>
       </div>
     </nav>
@@ -31,17 +35,17 @@
     <main class="container py-4">
 
       <h1 class="display-6 fw-semibold mb-0">
-        Bloc de notas sencillo <small class="text-secondary fs-4">by TacoCoders</small>
+        {{ t('titulo') }} <small class="text-secondary fs-4">by TacoCoders</small>
       </h1>
-      <h2 class="h3 mt-3">{{ editandoId !== null ? 'Editar nota' : 'Agregar nueva nota' }}</h2>
+      <h2 class="h3 mt-3">{{ editandoId !== null ? t('editar') : t('agregar') }}</h2>
 
       <!-- Formulario: v-model enlaza los campos con nuevaNota.
            novalidate: la validacion la hace Vue, no el navegador -->
       <form class="mb-4" @submit.prevent="guardarNota" novalidate>
-        <label for="texto" class="form-label">Escribe una nota:</label>
+        <label for="texto" class="form-label">{{ t('escribe') }}</label>
         <textarea id="texto" class="form-control mb-1" rows="3"
                   :class="{ 'is-invalid': mostrarErrores }"
-                  placeholder="Tu nota va aquí..." v-model="nuevaNota.texto"></textarea>
+                  :placeholder="t('placeholder')" v-model="nuevaNota.texto"></textarea>
 
         <!-- Lista de errores de validacion -->
         <div v-if="mostrarErrores" class="invalid-feedback d-block">
@@ -54,13 +58,13 @@
         </div>
 
         <button type="submit" class="btn btn-success mb-3 me-1">
-          {{ editandoId !== null ? 'Actualizar' : 'Guardar' }}
+          {{ editandoId !== null ? t('actualizar') : t('guardar') }}
         </button>
         <button v-if="editandoId !== null" type="button" class="btn btn-secondary mb-3"
-                @click="limpiarFormulario">Cancelar</button>
+                @click="limpiarFormulario">{{ t('cancelar') }}</button>
 
         <div class="d-flex align-items-center gap-2">
-          <label for="color" class="form-label mb-0">Elige un color:</label>
+          <label for="color" class="form-label mb-0">{{ t('color') }}</label>
           <input type="color" id="color" class="form-control form-control-color" v-model="nuevaNota.color">
         </div>
       </form>
@@ -69,12 +73,12 @@
       <div v-if="mensaje" class="alert alert-success py-2">{{ mensaje }}</div>
 
       <!-- Mensajes de carga y error -->
-      <div v-if="cargando" class="text-secondary">Cargando notas...</div>
+      <div v-if="cargando" class="text-secondary">{{ t('cargando') }}</div>
       <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
 
       <template v-else>
         <p class="text-secondary mb-3">
-          Notas de <strong>{{ usuarioActual ? usuarioActual.nombre : '' }}</strong>: {{ notasDelUsuario.length }}
+          {{ t('notasDe') }} <strong>{{ usuarioActual ? usuarioActual.nombre : '' }}</strong>: {{ notasDelUsuario.length }}
         </p>
 
         <!-- Lista de notas del usuario elegido -->
@@ -83,22 +87,23 @@
              :style="{ backgroundColor: nota.color, color: colorTexto(nota.color) }">
           <h3 class="h4 mb-1">{{ nota.texto }}</h3>
           <p class="fw-semibold mb-2">{{ formatearFecha(nota.fecha) }}</p>
-          <button type="button" class="btn btn-warning btn-sm me-1" @click="editarNota(nota)">Editar</button>
-          <button type="button" class="btn btn-danger btn-sm" @click="borrarNota(nota)">Borrar</button>
+          <button type="button" class="btn btn-warning btn-sm me-1" @click="editarNota(nota)">{{ t('btnEditar') }}</button>
+          <button type="button" class="btn btn-danger btn-sm" @click="borrarNota(nota)">{{ t('btnBorrar') }}</button>
         </div>
 
-        <p v-if="notasDelUsuario.length === 0" class="text-secondary">Este usuario todavía no tiene notas.</p>
+        <p v-if="notasDelUsuario.length === 0" class="text-secondary">{{ t('sinNotas') }}</p>
       </template>
 
     </main>
 
     <footer class="text-center text-secondary small py-3">
-      Práctica 5 · Programación Web (AEB-1055) · ITESCAM · Equipo TacoCoders
+      {{ t('pie') }}
     </footer>
   </div>
 
   <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="lib/vue/vue.global.prod.js"></script>
+  <script src="js/idiomas.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

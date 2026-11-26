@@ -26,7 +26,8 @@ createApp({
       editandoId: null,      // id de la nota que se esta editando (null = nota nueva)
       intentoGuardar: false, // los errores se muestran despues del primer intento
       mensaje: '',           // aviso verde de "nota guardada"
-      maxCaracteres: MAX_CARACTERES
+      maxCaracteres: MAX_CARACTERES,
+      idioma: 'es'           // idioma actual: 'es' o 'en'
     };
   },
 
@@ -48,18 +49,18 @@ createApp({
       const texto = this.nuevaNota.texto.trim();
 
       if (!this.usuarioActual) {
-        lista.push('Elige un usuario antes de guardar.');
+        lista.push(this.t('errUsuario'));
       }
       if (texto.length === 0) {
-        lista.push('La nota no puede estar vacía.');
+        lista.push(this.t('errVacia'));
       } else if (texto.length < MIN_CARACTERES) {
-        lista.push('La nota debe tener al menos ' + MIN_CARACTERES + ' caracteres.');
+        lista.push(this.t('errCorta', MIN_CARACTERES));
       }
       if (this.nuevaNota.texto.length > MAX_CARACTERES) {
-        lista.push('La nota no puede pasar de ' + MAX_CARACTERES + ' caracteres.');
+        lista.push(this.t('errLarga', MAX_CARACTERES));
       }
       if (!/^#[0-9a-fA-F]{6}$/.test(this.nuevaNota.color)) {
-        lista.push('El color no es válido.');
+        lista.push(this.t('errColor'));
       }
       // No se permiten dos notas iguales del mismo usuario
       const repetida = this.notasDelUsuario.some(n =>
@@ -67,7 +68,7 @@ createApp({
         this.normalizar(n.texto) === this.normalizar(texto)
       );
       if (texto && repetida) {
-        lista.push('Ya tienes una nota con ese mismo texto.');
+        lista.push(this.t('errRepetida'));
       }
       return lista;
     },
@@ -79,6 +80,17 @@ createApp({
 
   // ---------- Funciones ----------
   methods: {
+    // Devuelve el texto de la clave en el idioma actual; {n} se cambia por valor
+    t(clave, valor) {
+      const texto = TEXTOS[this.idioma][clave] || clave;
+      return valor !== undefined ? texto.replace('{n}', valor) : texto;
+    },
+
+    // Cambia entre espanol e ingles sin recargar la pagina
+    cambiarIdioma() {
+      this.idioma = this.idioma === 'es' ? 'en' : 'es';
+    },
+
     async cargarDatos() {
       try {
         const [resUsuarios, resNotas] = await Promise.all([
@@ -92,7 +104,7 @@ createApp({
         this.notas = await resNotas.json();
         this.usuarioId = this.usuarios.length ? this.usuarios[0].id : null;
       } catch (e) {
-        this.error = 'Error al cargar los datos: ' + e.message;
+        this.error = this.t('errorCarga') + e.message;
       } finally {
         this.cargando = false;
       }
@@ -130,7 +142,7 @@ createApp({
       }
 
       this.limpiarFormulario();
-      this.avisar(eraEdicion ? 'Nota actualizada.' : 'Nota guardada.');
+      this.avisar(this.t(eraEdicion ? 'actualizada' : 'guardada'));
     },
 
     // Muestra un aviso verde por 2.5 segundos
@@ -151,10 +163,10 @@ createApp({
 
     // Quita la nota del arreglo despues de confirmar
     borrarNota(nota) {
-      if (!confirm('¿Borrar la nota "' + nota.texto + '"?')) return;
+      if (!confirm(this.t('confirmarBorrar', nota.texto))) return;
       this.notas = this.notas.filter(n => n.id !== nota.id);
       if (this.editandoId === nota.id) this.limpiarFormulario();
-      this.avisar('Nota borrada.');
+      this.avisar(this.t('borrada'));
     },
 
     limpiarFormulario() {
@@ -184,7 +196,7 @@ createApp({
     },
 
     formatearFecha(fechaISO) {
-      return new Date(fechaISO).toLocaleString('es-MX', {
+      return new Date(fechaISO).toLocaleString(this.t('formatoFecha'), {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: 'numeric', minute: '2-digit'
       });
@@ -196,6 +208,11 @@ createApp({
     // Si cambia el usuario, se cancela la edicion pendiente
     usuarioId() {
       this.limpiarFormulario();
+    },
+    // Actualiza el atributo lang de la pagina al cambiar de idioma
+    idioma(nuevo) {
+      document.documentElement.lang = nuevo;
+      document.title = this.t('marca') + ' - TacoCoders';
     }
   },
 
