@@ -110,39 +110,37 @@ createApp({
       }
     },
 
-    // Guarda una nota nueva o los cambios de la que se esta editando.
+        // Guarda una nota nueva (POST) o los cambios de la que se esta editando.
     // Vue redibuja la lista sin recargar la pagina.
-    guardarNota() {
+    async guardarNota() {
       this.intentoGuardar = true;
-      if (this.errores.length > 0) return;   // no se guarda si hay errores
+      if (this.errores.length > 0) return;   // no se envia si hay errores
 
       const texto = this.nuevaNota.texto.trim();
       const eraEdicion = this.editandoId !== null;
 
-      if (this.editandoId !== null) {
-        // Editar: se cambian el texto y el color de la nota existente
-        const nota = this.notas.find(n => n.id === this.editandoId);
-        if (nota) {
-          nota.texto = texto;
-          nota.color = this.nuevaNota.color;
+      try {
+        if (eraEdicion) {
+          // Editar (se cambia a PUT en la tarea 6)
+          const nota = this.notas.find(n => n.id === this.editandoId);
+          if (nota) {
+            nota.texto = texto;
+            nota.color = this.nuevaNota.color;
+          }
+        } else {
+          // POST: la API valida y regresa la nota con su id y su fecha
+          const creada = await Api.crearNota({
+            usuarioId: this.usuarioId,
+            texto: texto,
+            color: this.nuevaNota.color
+          });
+          this.notas.push(creada);   // se agrega a la lista sin recargar
         }
-      } else {
-        // Agregar: nota nueva para el usuario elegido
-        const siguienteId = this.notas.length
-          ? Math.max(...this.notas.map(n => n.id)) + 1
-          : 1;
-
-        this.notas.push({
-          id: siguienteId,
-          usuarioId: this.usuarioId,
-          texto: texto,
-          color: this.nuevaNota.color,
-          fecha: new Date().toISOString()
-        });
+        this.limpiarFormulario();
+        this.avisar(this.t(eraEdicion ? 'actualizada' : 'guardada'));
+      } catch (e) {
+        alert(e.message);   // se cambia por un aviso en la tarea 8
       }
-
-      this.limpiarFormulario();
-      this.avisar(this.t(eraEdicion ? 'actualizada' : 'guardada'));
     },
 
     // Muestra un aviso verde por 2.5 segundos
