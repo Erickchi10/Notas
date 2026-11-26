@@ -35,12 +35,23 @@
       </h1>
       <h2 class="h3 mt-3">{{ editandoId !== null ? 'Editar nota' : 'Agregar nueva nota' }}</h2>
 
-      <!-- Formulario: v-model enlaza los campos con nuevaNota -->
-      <form class="mb-4" @submit.prevent="guardarNota">
+      <!-- Formulario: v-model enlaza los campos con nuevaNota.
+           novalidate: la validacion la hace Vue, no el navegador -->
+      <form class="mb-4" @submit.prevent="guardarNota" novalidate>
         <label for="texto" class="form-label">Escribe una nota:</label>
         <textarea id="texto" class="form-control mb-1" rows="3"
+                  :class="{ 'is-invalid': mostrarErrores }"
                   placeholder="Tu nota va aquí..." v-model="nuevaNota.texto"></textarea>
-        <div class="form-text mb-3">{{ nuevaNota.texto.length }} / 200</div>
+
+        <!-- Lista de errores de validacion -->
+        <div v-if="mostrarErrores" class="invalid-feedback d-block">
+          <div v-for="e in errores" :key="e">• {{ e }}</div>
+        </div>
+
+        <div class="form-text mb-3"
+             :class="{ 'text-danger fw-semibold': nuevaNota.texto.length > maxCaracteres }">
+          {{ nuevaNota.texto.length }} / {{ maxCaracteres }}
+        </div>
 
         <button type="submit" class="btn btn-success mb-3 me-1">
           {{ editandoId !== null ? 'Actualizar' : 'Guardar' }}
@@ -54,6 +65,9 @@
         </div>
       </form>
 
+      <!-- Aviso de exito -->
+      <div v-if="mensaje" class="alert alert-success py-2">{{ mensaje }}</div>
+
       <!-- Mensajes de carga y error -->
       <div v-if="cargando" class="text-secondary">Cargando notas...</div>
       <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
@@ -66,7 +80,7 @@
         <!-- Lista de notas del usuario elegido -->
         <div v-for="nota in notasDelUsuario" :key="nota.id"
              class="nota rounded p-4 mb-3" :class="{ 'nota-editando': nota.id === editandoId }"
-             :style="{ backgroundColor: nota.color }">
+             :style="{ backgroundColor: nota.color, color: colorTexto(nota.color) }">
           <h3 class="h4 mb-1">{{ nota.texto }}</h3>
           <p class="fw-semibold mb-2">{{ formatearFecha(nota.fecha) }}</p>
           <button type="button" class="btn btn-warning btn-sm me-1" @click="editarNota(nota)">Editar</button>

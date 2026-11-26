@@ -5,6 +5,10 @@
 
 const { createApp } = Vue;
 
+// Reglas de validacion
+const MIN_CARACTERES = 3;
+const MAX_CARACTERES = 200;
+
 createApp({
   // ---------- Datos de la app ----------
   data() {
@@ -19,7 +23,10 @@ createApp({
         texto: '',
         color: '#fff3b0'
       },
-      editandoId: null   // id de la nota que se esta editando (null = nota nueva)
+      editandoId: null,      // id de la nota que se esta editando (null = nota nueva)
+      intentoGuardar: false, // los errores se muestran despues del primer intento
+      mensaje: '',           // aviso verde de "nota guardada"
+      maxCaracteres: MAX_CARACTERES
     };
   },
 
@@ -33,6 +40,40 @@ createApp({
       return this.notas
         .filter(n => n.usuarioId === this.usuarioId)
         .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    },
+
+    // Lista de errores del formulario (vacia = todo correcto)
+    errores() {
+      const lista = [];
+      const texto = this.nuevaNota.texto.trim();
+
+      if (!this.usuarioActual) {
+        lista.push('Elige un usuario antes de guardar.');
+      }
+      if (texto.length === 0) {
+        lista.push('La nota no puede estar vacía.');
+      } else if (texto.length < MIN_CARACTERES) {
+        lista.push('La nota debe tener al menos ' + MIN_CARACTERES + ' caracteres.');
+      }
+      if (this.nuevaNota.texto.length > MAX_CARACTERES) {
+        lista.push('La nota no puede pasar de ' + MAX_CARACTERES + ' caracteres.');
+      }
+      if (!/^#[0-9a-fA-F]{6}$/.test(this.nuevaNota.color)) {
+        lista.push('El color no es válido.');
+      }
+      // No se permiten dos notas iguales del mismo usuario
+      const repetida = this.notasDelUsuario.some(n =>
+        n.id !== this.editandoId &&
+        this.normalizar(n.texto) === this.normalizar(texto)
+      );
+      if (texto && repetida) {
+        lista.push('Ya tienes una nota con ese mismo texto.');
+      }
+      return lista;
+    },
+
+    mostrarErrores() {
+      return this.intentoGuardar && this.errores.length > 0;
     }
   },
 
@@ -60,8 +101,11 @@ createApp({
     // Guarda una nota nueva o los cambios de la que se esta editando.
     // Vue redibuja la lista sin recargar la pagina.
     guardarNota() {
+      this.intentoGuardar = true;
+      if (this.errores.length > 0) return;   // no se guarda si hay errores
+
       const texto = this.nuevaNota.texto.trim();
-      if (!texto) return;   // la validacion completa se agrega en la Tarea 8
+      const eraEdicion = this.editandoId !== null;
 
       if (this.editandoId !== null) {
         // Editar: se cambian el texto y el color de la nota existente
@@ -86,6 +130,14 @@ createApp({
       }
 
       this.limpiarFormulario();
+      this.avisar(eraEdicion ? 'Nota actualizada.' : 'Nota guardada.');
+    },
+
+    // Muestra un aviso verde por 2.5 segundos
+    avisar(texto) {
+      this.mensaje = texto;
+      clearTimeout(this.temporizador);
+      this.temporizador = setTimeout(() => { this.mensaje = ''; }, 2500);
     },
 
     // Pasa los datos de la nota al formulario para editarla
@@ -102,12 +154,33 @@ createApp({
       if (!confirm('¿Borrar la nota "' + nota.texto + '"?')) return;
       this.notas = this.notas.filter(n => n.id !== nota.id);
       if (this.editandoId === nota.id) this.limpiarFormulario();
+      this.avisar('Nota borrada.');
     },
 
     limpiarFormulario() {
       this.editandoId = null;
+      this.intentoGuardar = false;
       this.nuevaNota.texto = '';
       this.nuevaNota.color = '#fff3b0';
+    },
+
+    // Quita acentos, mayusculas y espacios de mas para comparar textos
+    normalizar(texto) {
+      return texto
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+    },
+
+    // Texto blanco sobre colores oscuros y oscuro sobre colores claros
+    colorTexto(fondo) {
+      const r = parseInt(fondo.substr(1, 2), 16);
+      const g = parseInt(fondo.substr(3, 2), 16);
+      const b = parseInt(fondo.substr(5, 2), 16);
+      const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminancia < 0.55 ? '#ffffff' : '#212529';
     },
 
     formatearFecha(fechaISO) {
