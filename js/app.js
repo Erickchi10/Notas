@@ -121,12 +121,15 @@ createApp({
 
       try {
         if (eraEdicion) {
-          // Editar (se cambia a PUT en la tarea 6)
-          const nota = this.notas.find(n => n.id === this.editandoId);
-          if (nota) {
-            nota.texto = texto;
-            nota.color = this.nuevaNota.color;
-          }
+          // PUT: se envia la nota con los cambios y se reemplaza con la respuesta
+          const original = this.notas.find(n => n.id === this.editandoId);
+          const actualizada = await Api.actualizarNota({
+            ...original,
+            texto: texto,
+            color: this.nuevaNota.color
+          });
+          const i = this.notas.findIndex(n => n.id === actualizada.id);
+          this.notas.splice(i, 1, actualizada);   // Vue redibuja la tarjeta
         } else {
           // POST: la API valida y regresa la nota con su id y su fecha
           const creada = await Api.crearNota({
