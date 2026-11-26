@@ -1,0 +1,31 @@
+/* Practica 5 - Estilos propios de la app de notas (se cargan despues de Bootstrap) */
+[v-cloak] { display: none; }
+
+body {
+  background-color: #f4f6f8;
+}
+
+/* Tarjetas de nota */
+.nota {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease;
+}
+
+.nota:hover {
+  transform: translateY(-2px);
+}
+
+.nota h3 {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Selector de color un poco mas ancho */
+.form-control-color {
+  width: 3.5rem;
+}
+/* Nota que se esta editando */
+.nota-editando {
+  outline: 3px solid #0d6efd;
+}

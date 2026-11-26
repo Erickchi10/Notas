@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "usuarioId": 1,
+    "texto": "Terminar la práctica 5 de Programación Web",
+    "color": "#fff3b0",
+    "fecha": "2026-11-25T22:15:00"
+  },
+  {
+    "id": 2,
+    "usuarioId": 1,
+    "texto": "Entregar las prácticas 4, 5 y 6 juntas",
+    "color": "#cde7ff",
+    "fecha": "2026-11-26T00:30:00"
+  },
+  {
+    "id": 3,
+    "usuarioId": 2,
+    "texto": "Revisar el repositorio del equipo",
+    "color": "#d9f7d6",
+    "fecha": "2026-11-24T18:00:00"
+  },
+  {
+    "id": 4,
+    "usuarioId": 3,
+    "texto": "Preparar la presentación del proyecto",
+    "color": "#ffd6d6",
+    "fecha": "2026-11-23T10:45:00"
+  }
+]

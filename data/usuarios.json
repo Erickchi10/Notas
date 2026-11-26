@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "nombre": "Erick Chi Calán",
+    "usuario": "erick",
+    "correo": "erick@tacocoders.mx"
+  },
+  {
+    "id": 2,
+    "nombre": "Josue Cab Ku",
+    "usuario": "josue",
+    "correo": "josue@tacocoders.mx"
+  },
+  {
+    "id": 3,
+    "nombre": "Mauricio Cih Koh",
+    "usuario": "mauricio",
+    "correo": "mauricio@tacocoders.mx"
+  }
+]
