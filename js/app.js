@@ -13,7 +13,12 @@ createApp({
       notas: [],         // se llenan con data/notas.json
       usuarioId: null,   // usuario elegido en el selector
       cargando: true,
-      error: ''
+      error: '',
+      // Nota que se esta escribiendo en el formulario
+      nuevaNota: {
+        texto: '',
+        color: '#fff3b0'
+      }
     };
   },
 
@@ -49,6 +54,26 @@ createApp({
       } finally {
         this.cargando = false;
       }
+    },
+
+    // Agrega la nota al arreglo; Vue redibuja la lista sin recargar la pagina
+    guardarNota() {
+      const texto = this.nuevaNota.texto.trim();
+      if (!texto) return;   // la validacion completa se agrega en la Tarea 8
+
+      const siguienteId = this.notas.length
+        ? Math.max(...this.notas.map(n => n.id)) + 1
+        : 1;
+
+      this.notas.push({
+        id: siguienteId,
+        usuarioId: this.usuarioId,
+        texto: texto,
+        color: this.nuevaNota.color,
+        fecha: new Date().toISOString()
+      });
+
+      this.nuevaNota.texto = '';   // limpia el formulario
     },
 
     formatearFecha(fechaISO) {

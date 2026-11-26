@@ -35,18 +35,18 @@
       </h1>
       <h2 class="h3 mt-3">Agregar nueva nota</h2>
 
-      <!-- Formulario (se activa en la Tarea 6) -->
-      <form class="mb-4">
+            <!-- Formulario: v-model enlaza los campos con nuevaNota -->
+      <form class="mb-4" @submit.prevent="guardarNota">
         <label for="texto" class="form-label">Escribe una nota:</label>
         <textarea id="texto" class="form-control mb-1" rows="3"
-                  placeholder="Tu nota va aquí..."></textarea>
-        <div class="form-text mb-3">0 / 200</div>
+                  placeholder="Tu nota va aquí..." v-model="nuevaNota.texto"></textarea>
+        <div class="form-text mb-3">{{ nuevaNota.texto.length }} / 200</div>
 
         <button type="submit" class="btn btn-success mb-3">Guardar</button>
 
         <div class="d-flex align-items-center gap-2">
           <label for="color" class="form-label mb-0">Elige un color:</label>
-          <input type="color" id="color" class="form-control form-control-color" value="#fff3b0">
+          <input type="color" id="color" class="form-control form-control-color" v-model="nuevaNota.color">
         </div>
       </form>
 
