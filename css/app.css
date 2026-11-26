@@ -1,4 +1,5 @@
 /* Practica 5 - Estilos propios de la app de notas (se cargan despues de Bootstrap) */
+[v-cloak] { display: none; }
 
 body {
   background-color: #f4f6f8;
