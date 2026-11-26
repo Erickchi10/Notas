@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bloc de notas con Vue.js - Practica 5, Programacion Web, ITESCAM.">
+  <meta name="author" content="Erick Chi Calan - Equipo TacoCoders">
+  <title>Notas - TacoCoders</title>
+  <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+  <!-- Barra superior: usuario e idioma -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+      <span class="navbar-brand fw-bold">📝 Notas</span>
+      <div class="d-flex align-items-center gap-2">
+        <label for="usuario" class="text-white-50 small mb-0">Usuario:</label>
+        <select id="usuario" class="form-select form-select-sm w-auto">
+          <option>Erick Chi Calán</option>
+          <option>Josue Cab Ku</option>
+          <option>Mauricio Cih Koh</option>
+        </select>
+        <button type="button" class="btn btn-outline-light btn-sm">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+
+    <h1 class="display-6 fw-semibold mb-0">
+      Bloc de notas sencillo <small class="text-secondary fs-4">by TacoCoders</small>
+    </h1>
+    <h2 class="h3 mt-3">Agregar nueva nota</h2>
+
+    <!-- Formulario -->
+    <form class="mb-4">
+      <label for="texto" class="form-label">Escribe una nota:</label>
+      <textarea id="texto" class="form-control mb-1" rows="3"
+                placeholder="Tu nota va aquí..."></textarea>
+      <div class="form-text mb-3">0 / 200</div>
+
+      <button type="submit" class="btn btn-success mb-3">Guardar</button>
+
+      <div class="d-flex align-items-center gap-2">
+        <label for="color" class="form-label mb-0">Elige un color:</label>
+        <input type="color" id="color" class="form-control form-control-color" value="#fff3b0">
+      </div>
+    </form>
+
+    <!-- Lista de notas (ejemplo fijo, en la Tarea 5 la llena Vue) -->
+    <div class="nota rounded p-4 mb-3" style="background-color: #cde7ff;">
+      <h3 class="h4 mb-1">Entregar las prácticas 4, 5 y 6 juntas</h3>
+      <p class="fw-semibold mb-2">26/11/2026, 12:30 a.m.</p>
+      <button type="button" class="btn btn-warning btn-sm">Editar</button>
+      <button type="button" class="btn btn-danger btn-sm">Borrar</button>
+    </div>
+
+    <div class="nota rounded p-4 mb-3" style="background-color: #fff3b0;">
+      <h3 class="h4 mb-1">Terminar la práctica 5 de Programación Web</h3>
+      <p class="fw-semibold mb-2">25/11/2026, 10:15 p.m.</p>
+      <button type="button" class="btn btn-warning btn-sm">Editar</button>
+      <button type="button" class="btn btn-danger btn-sm">Borrar</button>
+    </div>
+
+  </main>
+
+  <footer class="text-center text-secondary small py-3">
+    Práctica 5 · Programación Web (AEB-1055) · ITESCAM · Equipo TacoCoders
+  </footer>
+
+  <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
