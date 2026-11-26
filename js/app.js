@@ -27,7 +27,9 @@ createApp({
       intentoGuardar: false, // los errores se muestran despues del primer intento
       mensaje: '',           // aviso verde de "nota guardada"
       maxCaracteres: MAX_CARACTERES,
-      idioma: 'es'           // idioma actual: 'es' o 'en'
+      idioma: 'es',          // idioma actual: 'es' o 'en'
+      enviando: false,       // true mientras se espera la respuesta de la API
+      errorApi: ''           // aviso rojo si falla POST, PUT o DELETE
     };
   },
 
@@ -110,15 +112,17 @@ createApp({
       }
     },
 
-        // Guarda una nota nueva (POST) o los cambios de la que se esta editando.
+           // Guarda una nota nueva (POST) o los cambios de la que se esta editando (PUT).
     // Vue redibuja la lista sin recargar la pagina.
     async guardarNota() {
       this.intentoGuardar = true;
-      if (this.errores.length > 0) return;   // no se envia si hay errores
+      if (this.errores.length > 0 || this.enviando) return;   // no se envia si hay errores
 
       const texto = this.nuevaNota.texto.trim();
       const eraEdicion = this.editandoId !== null;
 
+      this.enviando = true;
+      this.errorApi = '';
       try {
         if (eraEdicion) {
           // PUT: se envia la nota con los cambios y se reemplaza con la respuesta
@@ -142,7 +146,9 @@ createApp({
         this.limpiarFormulario();
         this.avisar(this.t(eraEdicion ? 'actualizada' : 'guardada'));
       } catch (e) {
-        alert(e.message);   // se cambia por un aviso en la tarea 8
+        this.errorApi = this.t('errorApi') + e.message;
+      } finally {
+        this.enviando = false;
       }
     },
 
@@ -162,16 +168,21 @@ createApp({
       this.$nextTick(() => document.getElementById('texto').focus());
     },
 
-    // DELETE: pide a la API borrar la nota y luego la quita de la lista
+       // DELETE: pide a la API borrar la nota y luego la quita de la lista
     async borrarNota(nota) {
+      if (this.enviando) return;
       if (!confirm(this.t('confirmarBorrar', nota.texto))) return;
+      this.enviando = true;
+      this.errorApi = '';
       try {
         await Api.borrarNota(nota.id);
         this.notas = this.notas.filter(n => n.id !== nota.id);   // sin recargar
         if (this.editandoId === nota.id) this.limpiarFormulario();
         this.avisar(this.t('borrada'));
       } catch (e) {
-        alert(e.message);   // se cambia por un aviso en la tarea 8
+        this.errorApi = this.t('errorApi') + e.message;
+      } finally {
+        this.enviando = false;
       }
     },
 
