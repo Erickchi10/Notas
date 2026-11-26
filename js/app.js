@@ -18,7 +18,8 @@ createApp({
       nuevaNota: {
         texto: '',
         color: '#fff3b0'
-      }
+      },
+      editandoId: null   // id de la nota que se esta editando (null = nota nueva)
     };
   },
 
@@ -56,24 +57,57 @@ createApp({
       }
     },
 
-    // Agrega la nota al arreglo; Vue redibuja la lista sin recargar la pagina
+    // Guarda una nota nueva o los cambios de la que se esta editando.
+    // Vue redibuja la lista sin recargar la pagina.
     guardarNota() {
       const texto = this.nuevaNota.texto.trim();
       if (!texto) return;   // la validacion completa se agrega en la Tarea 8
 
-      const siguienteId = this.notas.length
-        ? Math.max(...this.notas.map(n => n.id)) + 1
-        : 1;
+      if (this.editandoId !== null) {
+        // Editar: se cambian el texto y el color de la nota existente
+        const nota = this.notas.find(n => n.id === this.editandoId);
+        if (nota) {
+          nota.texto = texto;
+          nota.color = this.nuevaNota.color;
+        }
+      } else {
+        // Agregar: nota nueva para el usuario elegido
+        const siguienteId = this.notas.length
+          ? Math.max(...this.notas.map(n => n.id)) + 1
+          : 1;
 
-      this.notas.push({
-        id: siguienteId,
-        usuarioId: this.usuarioId,
-        texto: texto,
-        color: this.nuevaNota.color,
-        fecha: new Date().toISOString()
-      });
+        this.notas.push({
+          id: siguienteId,
+          usuarioId: this.usuarioId,
+          texto: texto,
+          color: this.nuevaNota.color,
+          fecha: new Date().toISOString()
+        });
+      }
 
-      this.nuevaNota.texto = '';   // limpia el formulario
+      this.limpiarFormulario();
+    },
+
+    // Pasa los datos de la nota al formulario para editarla
+    editarNota(nota) {
+      this.editandoId = nota.id;
+      this.nuevaNota.texto = nota.texto;
+      this.nuevaNota.color = nota.color;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.$nextTick(() => document.getElementById('texto').focus());
+    },
+
+    // Quita la nota del arreglo despues de confirmar
+    borrarNota(nota) {
+      if (!confirm('¿Borrar la nota "' + nota.texto + '"?')) return;
+      this.notas = this.notas.filter(n => n.id !== nota.id);
+      if (this.editandoId === nota.id) this.limpiarFormulario();
+    },
+
+    limpiarFormulario() {
+      this.editandoId = null;
+      this.nuevaNota.texto = '';
+      this.nuevaNota.color = '#fff3b0';
     },
 
     formatearFecha(fechaISO) {
@@ -81,6 +115,14 @@ createApp({
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: 'numeric', minute: '2-digit'
       });
+    }
+  },
+
+  // ---------- Vigilantes ----------
+  watch: {
+    // Si cambia el usuario, se cancela la edicion pendiente
+    usuarioId() {
+      this.limpiarFormulario();
     }
   },
 

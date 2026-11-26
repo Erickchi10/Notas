@@ -25,3 +25,7 @@ body {
 .form-control-color {
   width: 3.5rem;
 }
+/* Nota que se esta editando */
+.nota-editando {
+  outline: 3px solid #0d6efd;
+}

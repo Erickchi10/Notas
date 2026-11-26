@@ -33,16 +33,20 @@
       <h1 class="display-6 fw-semibold mb-0">
         Bloc de notas sencillo <small class="text-secondary fs-4">by TacoCoders</small>
       </h1>
-      <h2 class="h3 mt-3">Agregar nueva nota</h2>
+      <h2 class="h3 mt-3">{{ editandoId !== null ? 'Editar nota' : 'Agregar nueva nota' }}</h2>
 
-            <!-- Formulario: v-model enlaza los campos con nuevaNota -->
+      <!-- Formulario: v-model enlaza los campos con nuevaNota -->
       <form class="mb-4" @submit.prevent="guardarNota">
         <label for="texto" class="form-label">Escribe una nota:</label>
         <textarea id="texto" class="form-control mb-1" rows="3"
                   placeholder="Tu nota va aquí..." v-model="nuevaNota.texto"></textarea>
         <div class="form-text mb-3">{{ nuevaNota.texto.length }} / 200</div>
 
-        <button type="submit" class="btn btn-success mb-3">Guardar</button>
+        <button type="submit" class="btn btn-success mb-3 me-1">
+          {{ editandoId !== null ? 'Actualizar' : 'Guardar' }}
+        </button>
+        <button v-if="editandoId !== null" type="button" class="btn btn-secondary mb-3"
+                @click="limpiarFormulario">Cancelar</button>
 
         <div class="d-flex align-items-center gap-2">
           <label for="color" class="form-label mb-0">Elige un color:</label>
@@ -61,11 +65,12 @@
 
         <!-- Lista de notas del usuario elegido -->
         <div v-for="nota in notasDelUsuario" :key="nota.id"
-             class="nota rounded p-4 mb-3" :style="{ backgroundColor: nota.color }">
+             class="nota rounded p-4 mb-3" :class="{ 'nota-editando': nota.id === editandoId }"
+             :style="{ backgroundColor: nota.color }">
           <h3 class="h4 mb-1">{{ nota.texto }}</h3>
           <p class="fw-semibold mb-2">{{ formatearFecha(nota.fecha) }}</p>
-          <button type="button" class="btn btn-warning btn-sm me-1">Editar</button>
-          <button type="button" class="btn btn-danger btn-sm">Borrar</button>
+          <button type="button" class="btn btn-warning btn-sm me-1" @click="editarNota(nota)">Editar</button>
+          <button type="button" class="btn btn-danger btn-sm" @click="borrarNota(nota)">Borrar</button>
         </div>
 
         <p v-if="notasDelUsuario.length === 0" class="text-secondary">Este usuario todavía no tiene notas.</p>
