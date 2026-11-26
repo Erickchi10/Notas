@@ -162,12 +162,17 @@ createApp({
       this.$nextTick(() => document.getElementById('texto').focus());
     },
 
-    // Quita la nota del arreglo despues de confirmar
-    borrarNota(nota) {
+    // DELETE: pide a la API borrar la nota y luego la quita de la lista
+    async borrarNota(nota) {
       if (!confirm(this.t('confirmarBorrar', nota.texto))) return;
-      this.notas = this.notas.filter(n => n.id !== nota.id);
-      if (this.editandoId === nota.id) this.limpiarFormulario();
-      this.avisar(this.t('borrada'));
+      try {
+        await Api.borrarNota(nota.id);
+        this.notas = this.notas.filter(n => n.id !== nota.id);   // sin recargar
+        if (this.editandoId === nota.id) this.limpiarFormulario();
+        this.avisar(this.t('borrada'));
+      } catch (e) {
+        alert(e.message);   // se cambia por un aviso en la tarea 8
+      }
     },
 
     limpiarFormulario() {
