@@ -1,6 +1,6 @@
 // ==========================================================
-// Practica 5. Aplicaciones del lado del cliente
-// Bloc de notas con Vue.js 3 - Equipo TacoCoders
+// Practica 5 y 6. Bloc de notas con Vue.js 3 - Equipo TacoCoders
+// Practica 6: los datos se piden a la API con fetch (api.js)
 // ==========================================================
 
 const { createApp } = Vue;
@@ -13,8 +13,8 @@ createApp({
   // ---------- Datos de la app ----------
   data() {
     return {
-      usuarios: [],      // se llenan con data/usuarios.json
-      notas: [],         // se llenan con data/notas.json
+      usuarios: [],      // se llenan con GET api/usuarios.php
+      notas: [],         // se llenan con GET api/notas.php
       usuarioId: null,   // usuario elegido en el selector
       cargando: true,
       error: '',
@@ -27,7 +27,9 @@ createApp({
       intentoGuardar: false, // los errores se muestran despues del primer intento
       mensaje: '',           // aviso verde de "nota guardada"
       maxCaracteres: MAX_CARACTERES,
-      idioma: 'es'           // idioma actual: 'es' o 'en'
+      idioma: 'es',          // idioma actual: 'es' o 'en'
+      enviando: false,       // true mientras se espera la respuesta de la API
+      errorApi: ''           // aviso rojo si falla POST, PUT o DELETE
     };
   },
 
@@ -91,17 +93,17 @@ createApp({
       this.idioma = this.idioma === 'es' ? 'en' : 'es';
     },
 
+        // GET: pide los usuarios y las notas a la API
     async cargarDatos() {
+      this.cargando = true;
+      this.error = '';
       try {
-        const [resUsuarios, resNotas] = await Promise.all([
-          fetch('data/usuarios.json'),
-          fetch('data/notas.json')
+        const [usuarios, notas] = await Promise.all([
+          Api.obtenerUsuarios(),
+          Api.obtenerNotas()
         ]);
-        if (!resUsuarios.ok || !resNotas.ok) {
-          throw new Error('No se pudieron leer los archivos JSON');
-        }
-        this.usuarios = await resUsuarios.json();
-        this.notas = await resNotas.json();
+        this.usuarios = usuarios;
+        this.notas = notas;
         this.usuarioId = this.usuarios.length ? this.usuarios[0].id : null;
       } catch (e) {
         this.error = this.t('errorCarga') + e.message;
@@ -110,39 +112,44 @@ createApp({
       }
     },
 
-    // Guarda una nota nueva o los cambios de la que se esta editando.
+           // Guarda una nota nueva (POST) o los cambios de la que se esta editando (PUT).
     // Vue redibuja la lista sin recargar la pagina.
-    guardarNota() {
+    async guardarNota() {
       this.intentoGuardar = true;
-      if (this.errores.length > 0) return;   // no se guarda si hay errores
+      if (this.errores.length > 0 || this.enviando) return;   // no se envia si hay errores
 
       const texto = this.nuevaNota.texto.trim();
       const eraEdicion = this.editandoId !== null;
 
-      if (this.editandoId !== null) {
-        // Editar: se cambian el texto y el color de la nota existente
-        const nota = this.notas.find(n => n.id === this.editandoId);
-        if (nota) {
-          nota.texto = texto;
-          nota.color = this.nuevaNota.color;
+      this.enviando = true;
+      this.errorApi = '';
+      try {
+        if (eraEdicion) {
+          // PUT: se envia la nota con los cambios y se reemplaza con la respuesta
+          const original = this.notas.find(n => n.id === this.editandoId);
+          const actualizada = await Api.actualizarNota({
+            ...original,
+            texto: texto,
+            color: this.nuevaNota.color
+          });
+          const i = this.notas.findIndex(n => n.id === actualizada.id);
+          this.notas.splice(i, 1, actualizada);   // Vue redibuja la tarjeta
+        } else {
+          // POST: la API valida y regresa la nota con su id y su fecha
+          const creada = await Api.crearNota({
+            usuarioId: this.usuarioId,
+            texto: texto,
+            color: this.nuevaNota.color
+          });
+          this.notas.push(creada);   // se agrega a la lista sin recargar
         }
-      } else {
-        // Agregar: nota nueva para el usuario elegido
-        const siguienteId = this.notas.length
-          ? Math.max(...this.notas.map(n => n.id)) + 1
-          : 1;
-
-        this.notas.push({
-          id: siguienteId,
-          usuarioId: this.usuarioId,
-          texto: texto,
-          color: this.nuevaNota.color,
-          fecha: new Date().toISOString()
-        });
+        this.limpiarFormulario();
+        this.avisar(this.t(eraEdicion ? 'actualizada' : 'guardada'));
+      } catch (e) {
+        this.errorApi = this.t('errorApi') + e.message;
+      } finally {
+        this.enviando = false;
       }
-
-      this.limpiarFormulario();
-      this.avisar(this.t(eraEdicion ? 'actualizada' : 'guardada'));
     },
 
     // Muestra un aviso verde por 2.5 segundos
@@ -161,12 +168,22 @@ createApp({
       this.$nextTick(() => document.getElementById('texto').focus());
     },
 
-    // Quita la nota del arreglo despues de confirmar
-    borrarNota(nota) {
+       // DELETE: pide a la API borrar la nota y luego la quita de la lista
+    async borrarNota(nota) {
+      if (this.enviando) return;
       if (!confirm(this.t('confirmarBorrar', nota.texto))) return;
-      this.notas = this.notas.filter(n => n.id !== nota.id);
-      if (this.editandoId === nota.id) this.limpiarFormulario();
-      this.avisar(this.t('borrada'));
+      this.enviando = true;
+      this.errorApi = '';
+      try {
+        await Api.borrarNota(nota.id);
+        this.notas = this.notas.filter(n => n.id !== nota.id);   // sin recargar
+        if (this.editandoId === nota.id) this.limpiarFormulario();
+        this.avisar(this.t('borrada'));
+      } catch (e) {
+        this.errorApi = this.t('errorApi') + e.message;
+      } finally {
+        this.enviando = false;
+      }
     },
 
     limpiarFormulario() {

@@ -32,7 +32,11 @@ const TEXTOS = {
     errLarga: 'La nota no puede pasar de {n} caracteres.',
     errColor: 'El color no es válido.',
     errRepetida: 'Ya tienes una nota con ese mismo texto.',
-    pie: 'Práctica 5 · Programación Web (AEB-1055) · ITESCAM · Equipo TacoCoders',
+    errorApi: 'No se pudo completar la operación: ',
+    reintentar: 'Reintentar',
+    enviando: 'Enviando...',
+    avisoApi: 'Los datos se piden y se envían a la API con fetch (GET, POST, PUT, DELETE). Los cambios no se guardan en el archivo JSON.',
+    pie: 'Práctica 6 · Programación Web (AEB-1055) · ITESCAM · Equipo TacoCoders',
     formatoFecha: 'es-MX'
   },
   en: {
@@ -63,7 +67,11 @@ const TEXTOS = {
     errLarga: 'The note cannot be longer than {n} characters.',
     errColor: 'The color is not valid.',
     errRepetida: 'You already have a note with the same text.',
-    pie: 'Practice 5 · Web Programming (AEB-1055) · ITESCAM · TacoCoders Team',
+    errorApi: 'The operation could not be completed: ',
+    reintentar: 'Retry',
+    enviando: 'Sending...',
+    avisoApi: 'Data is requested from and sent to the API with fetch (GET, POST, PUT, DELETE). Changes are not saved in the JSON file.',
+    pie: 'Practice 6 · Web Programming (AEB-1055) · ITESCAM · TacoCoders Team',
     formatoFecha: 'en-US'
   }
 };

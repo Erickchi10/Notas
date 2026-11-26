@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Bloc de notas con Vue.js - Practica 5, Programacion Web, ITESCAM.">
+  <meta name="description" content="Bloc de notas con Vue.js y fetch - Practicas 5 y 6, Programacion Web, ITESCAM.">
   <meta name="author" content="Erick Chi Calan - Equipo TacoCoders">
   <title>Notas - TacoCoders</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
   <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/app.css">
 </head>
@@ -57,8 +58,10 @@
           {{ nuevaNota.texto.length }} / {{ maxCaracteres }}
         </div>
 
-        <button type="submit" class="btn btn-success mb-3 me-1">
-          {{ editandoId !== null ? t('actualizar') : t('guardar') }}
+        <!-- Mientras se espera la respuesta de la API el boton se desactiva -->
+        <button type="submit" class="btn btn-success mb-3 me-1" :disabled="enviando">
+          <span v-if="enviando" class="spinner-border spinner-border-sm me-1"></span>
+          {{ enviando ? t('enviando') : (editandoId !== null ? t('actualizar') : t('guardar')) }}
         </button>
         <button v-if="editandoId !== null" type="button" class="btn btn-secondary mb-3"
                 @click="limpiarFormulario">{{ t('cancelar') }}</button>
@@ -72,23 +75,37 @@
       <!-- Aviso de exito -->
       <div v-if="mensaje" class="alert alert-success py-2">{{ mensaje }}</div>
 
-      <!-- Mensajes de carga y error -->
-      <div v-if="cargando" class="text-secondary">{{ t('cargando') }}</div>
-      <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
+      <!-- Aviso rojo si falla POST, PUT o DELETE -->
+      <div v-if="errorApi" class="alert alert-danger alert-dismissible py-2">
+        {{ errorApi }}
+        <button type="button" class="btn-close" @click="errorApi = ''"></button>
+      </div>
+
+      <!-- Mensajes de carga y error al pedir los datos (GET) -->
+      <div v-if="cargando" class="text-secondary">
+        <span class="spinner-border spinner-border-sm me-1"></span>{{ t('cargando') }}
+      </div>
+      <div v-else-if="error" class="alert alert-danger d-flex justify-content-between align-items-center">
+        <span>{{ error }}</span>
+        <button type="button" class="btn btn-outline-danger btn-sm" @click="cargarDatos">{{ t('reintentar') }}</button>
+      </div>
 
       <template v-else>
+        <!-- Aviso: los datos van y vienen de la API con fetch -->
+        <p class="small text-secondary fst-italic mb-1">{{ t('avisoApi') }}</p>
+
         <p class="text-secondary mb-3">
           {{ t('notasDe') }} <strong>{{ usuarioActual ? usuarioActual.nombre : '' }}</strong>: {{ notasDelUsuario.length }}
         </p>
 
-        <!-- Lista de notas del usuario elegido -->
+        <!-- Lista de notas del usuario elegido (debajo del formulario) -->
         <div v-for="nota in notasDelUsuario" :key="nota.id"
              class="nota rounded p-4 mb-3" :class="{ 'nota-editando': nota.id === editandoId }"
              :style="{ backgroundColor: nota.color, color: colorTexto(nota.color) }">
           <h3 class="h4 mb-1">{{ nota.texto }}</h3>
           <p class="fw-semibold mb-2">{{ formatearFecha(nota.fecha) }}</p>
           <button type="button" class="btn btn-warning btn-sm me-1" @click="editarNota(nota)">{{ t('btnEditar') }}</button>
-          <button type="button" class="btn btn-danger btn-sm" @click="borrarNota(nota)">{{ t('btnBorrar') }}</button>
+          <button type="button" class="btn btn-danger btn-sm" :disabled="enviando" @click="borrarNota(nota)">{{ t('btnBorrar') }}</button>
         </div>
 
         <p v-if="notasDelUsuario.length === 0" class="text-secondary">{{ t('sinNotas') }}</p>
@@ -104,6 +121,7 @@
   <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="lib/vue/vue.global.prod.js"></script>
   <script src="js/idiomas.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
